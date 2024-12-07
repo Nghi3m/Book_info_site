@@ -6,7 +6,6 @@
     let showLoginModal = false;
     const items = Array(8).fill({
       title: 'Thanh Gươm Diệt Quỷ',
-      chapter: 'Chap 206',
       image: 'thumbnails/kimetsunoyaiba.png', // Replace with your image path
     });
 

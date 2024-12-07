@@ -1,6 +1,6 @@
-<script>
+<script lang=ts>
     export let title;
-    export let items = [];
+    export let items: any[] = [];
     import Card from "./Card.svelte"
   </script>
   
