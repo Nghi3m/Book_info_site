@@ -24,10 +24,9 @@
         <li><a href="#" class="hover:underline">Xếp hạng</a></li>
         <li><a href="#" class="hover:underline">Thể loại</a></li>
         <li><a href="#" class="hover:underline">Báo cáo</a></li>
-        <li><a href="#" class="hover:underline">Thông tin</a></li>
+        <li><a href="/info" class="hover:underline">Thông tin</a></li>
         <li><a  class="hover:underline">Fanpage</a></li>
-      </ul>href="#"
-  
+      </ul>
       {#if isAuthenticated}
         <!-- User profile dropdown -->
         <div class="relative">

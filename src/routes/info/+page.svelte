@@ -1,7 +1,7 @@
 <script>
-    import Navbar from '../components/NavBar.svelte';
-    import LoginModal from '../components/LoginModal.svelte';
-	import Category from '../components/Category.svelte';
+    import Navbar from '../../components/NavBar.svelte';
+    import LoginModal from '../../components/LoginModal.svelte';
+	import Category from '../../components/Category.svelte';
 
     let showLoginModal = false;
     let isAuthenticated = false;
@@ -34,10 +34,10 @@
   onLogout={logout}
 />
 
-<div class="w-[1307px] h-[1643px] relative bg-white rounded-[10px] shadow">
+<div class="w-[1307px] h-[1643px] relative bg-white rounded-[10px] shadow mt-32">
     <div class="pl-11 pr-7 py-[23px] left-[1px] top-0 absolute justify-end items-center gap-[38px] inline-flex">
         <img class="w-[275px] h-[321px] relative rounded-[10px] shadow" src={items.image} alt={items.title}/>
-        <div class="w-[921px] h-[371px] relative bg-[#d9e4f8] rounded-[10px] flex-col justify-start items-start flex">
+        <div class="size-fit relative bg-[#d9e4f8] rounded-[10px] flex-col justify-start items-start flex p-16">
             <div class="w-[350px] h-[57px] text-black text-2xl font-semibold font-['Inter']">{items.title}</div>
             <div class="w-[367px] h-40 flex-col justify-center items-start inline-flex">
                 <div class="self-stretch grow shrink basis-0 justify-center items-start gap-[35px] inline-flex">
