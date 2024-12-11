@@ -23,9 +23,7 @@
         <li><a href="#" class="hover:underline">Trang chủ</a></li>
         <li><a href="#" class="hover:underline">Xếp hạng</a></li>
         <li><a href="#" class="hover:underline">Thể loại</a></li>
-        <li><a href="#" class="hover:underline">Báo cáo</a></li>
-        <li><a href="/info" class="hover:underline">Thông tin</a></li>
-        <li><a  class="hover:underline">Fanpage</a></li>
+        <li><a href="/manageBookOption" class="hover:underline">Quản lý</a></li>
       </ul>
       {#if isAuthenticated}
         <!-- User profile dropdown -->

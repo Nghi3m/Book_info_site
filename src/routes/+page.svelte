@@ -37,7 +37,7 @@
   onLogout={logout}
 />
 
-<main class="bg-blue-100 py-32">
+<main class="bg-blue-100 py-32 max-w-full">
   <Section title="Truyện mới nhất" items={items} />
   <Section title="Lượt xem nhiều nhất" items={items} />
 </main>
