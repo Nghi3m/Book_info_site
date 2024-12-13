@@ -1,23 +1,29 @@
 <script>
+    import { onMount } from 'svelte';
     import { goto } from '$app/navigation';
 
     let bookTitle = "";
     let author = "";
     let bookId = "";
-    let selectedCategory = "";
-    let categories = ["Shounen", "Tragedy", "Drama", "Historical"];
-    let tags = [];
+    let selectedPublisher = "";
+    let publishers = [];
+    let categories = [];
+    let selectedCategories = [];
     let coverImage = null;
     let coverPreview = "";
+    let pdfFile = null;
+    let pdfFileName = ""; // To store the name of the uploaded PDF file
 
-    function addTag(tag) {
-        if (tag && !tags.includes(tag)) {
-            tags = [...tags, tag];
+    async function fetchInitialData() {
+        try {
+            const resPublishers = await fetch('http://localhost:3000/getPublishers');
+            const resCategories = await fetch('http://localhost:3000/getCategories');
+
+            if (resPublishers.ok) publishers = await resPublishers.json();
+            if (resCategories.ok) categories = await resCategories.json();
+        } catch (error) {
+            console.error('Error fetching data:', error);
         }
-    }
-
-    function removeTag(tag) {
-        tags = tags.filter(t => t !== tag);
     }
 
     function handleImageUpload(event) {
@@ -32,8 +38,16 @@
         }
     }
 
+    function handlePdfUpload(event) {
+        const file = event.target.files[0];
+        if (file) {
+            pdfFile = file;
+            pdfFileName = file.name; // Set the filename when PDF is uploaded
+        }
+    }
+
     async function saveBook() {
-        if (!bookTitle || !author || !bookId) {
+        if (!bookTitle || !author || !selectedPublisher || !(pdfFile || pdfFileName) || !(coverImage)) {
             alert("Vui lòng điền đầy đủ thông tin sách.");
             return;
         }
@@ -41,23 +55,28 @@
         const formData = new FormData();
         formData.append("title", bookTitle);
         formData.append("author", author);
-        formData.append("bookId", bookId);
-        formData.append("tags", JSON.stringify(tags));
+        formData.append("bookId", "NULL");
+        formData.append("publisherId", selectedPublisher);
+        formData.append("categories", JSON.stringify(selectedCategories));
         if (coverImage) {
             formData.append("cover", coverImage);
         }
+        if (pdfFile) {
+            formData.append("pdf", pdfFile);
+        }
 
         try {
-            const response = await fetch("/api/save-book", {
+            const response = await fetch("http://localhost:3000/addBook", {
                 method: "POST",
                 body: formData,
             });
 
             if (response.ok) {
-                alert("Sách đã được lưu thành công.");
-                goto("/");
+                alert("Sách đã được thêm thành công.");
+                goto("/manageBookOption"); // Redirect to home
             } else {
-                alert("Đã xảy ra lỗi khi lưu sách.");
+                const errorData = await response.json();
+                alert(errorData.error || "Đã xảy ra lỗi khi lưu sách.");
             }
         } catch (error) {
             console.error("Error saving book:", error);
@@ -65,35 +84,36 @@
         }
     }
 
-    function goBack() {
-        goto("/manageBookOption");
-    }
+    onMount(fetchInitialData);
 </script>
 
 <div class="bg-blue-50 min-h-screen p-6">
     <header class="flex justify-between items-center mb-4">
         <h1 class="text-2xl font-bold text-blue-600">Thêm Sách Mới</h1>
-        <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" on:click={goBack}>
-            Quay Lại
-        </button>
+        <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" on:click={() => goto('/')}>Quay Lại</button>
     </header>
 
     <div class="bg-white p-6 rounded-md shadow-md">
         <div class="flex gap-6">
             <!-- Image Section -->
-            <div class="flex flex-col items-center justify-center w-1/3">
+            <div class="w-1/3 space-y-4">
                 <div class="w-full h-48 bg-gray-200 flex items-center justify-center rounded relative">
                     {#if coverPreview}
                         <img src={coverPreview} alt="Cover Preview" class="w-full h-full object-cover rounded" />
                     {:else}
                         <span class="text-gray-500">Thêm hình ảnh</span>
                     {/if}
-                    <input
-                        type="file"
-                        accept="image/*"
-                        class="absolute inset-0 opacity-0 cursor-pointer"
-                        on:change={handleImageUpload}
-                    />
+                    <input type="file" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" on:change={handleImageUpload} />
+                </div>
+
+                <div class="w-full h-32 bg-gray-100 flex items-center justify-center rounded relative">
+
+                    <input type="file" accept="application/pdf" class="absolute inset-0 opacity-0 cursor-pointer" on:change={handlePdfUpload} />
+                    {#if pdfFileName}
+                        <div class="mt-2 text-gray-700">Tệp đã chọn: {pdfFileName}</div> <!-- Display filename -->
+                    {:else}
+                        <span class="text-gray-500">Thêm tệp PDF</span>
+                    {/if}
                 </div>
             </div>
 
@@ -101,74 +121,49 @@
             <div class="flex-1 space-y-4">
                 <div>
                     <label class="block text-gray-700 font-semibold">Tên Truyện - Sách:</label>
-                    <input
-                        type="text"
-                        bind:value={bookTitle}
-                        placeholder="Điền tên Truyện - Sách"
-                        class="border border-gray-300 rounded-md w-full p-2"
-                    />
+                    <input type="text" bind:value={bookTitle} class="border border-gray-300 rounded-md w-full p-2" />
                 </div>
                 <div>
                     <label class="block text-gray-700 font-semibold">Tác giả:</label>
-                    <input
-                        type="text"
-                        bind:value={author}
-                        placeholder="Điền tên Tác Giả"
-                        class="border border-gray-300 rounded-md w-full p-2"
-                    />
+                    <input type="text" bind:value={author} class="border border-gray-300 rounded-md w-full p-2" />
                 </div>
-                <div>
+                <!-- <div>
                     <label class="block text-gray-700 font-semibold">Mã Sách:</label>
-                    <input
-                        type="text"
-                        bind:value={bookId}
-                        placeholder="Điền mã sách"
-                        class="border border-gray-300 rounded-md w-full p-2"
-                    />
-                </div>
+                    <input type="text" bind:value={bookId} class="border border-gray-300 rounded-md w-full p-2" />
+                </div> -->
                 <div>
-                    <label class="block text-gray-700 font-semibold">Thể loại:</label>
-                    <select
-                        bind:value={selectedCategory}
-                        class="border border-gray-300 rounded-md w-full p-2"
-                        on:change={(e) => addTag(e.target.value)}
-                    >
-                        <option value="" disabled>Chọn thể loại</option>
-                        {#each categories as category}
-                            <option value={category}>{category}</option>
+                    <label class="block text-gray-700 font-semibold">Nhà Xuất Bản:</label>
+                    <select bind:value={selectedPublisher} class="border border-gray-300 rounded-md w-full p-2">
+                        <option value="" disabled>Chọn nhà xuất bản</option>
+                        {#each publishers as publisher}
+                            <option value={publisher.publisher_id}>{publisher.name}</option>
                         {/each}
                     </select>
                 </div>
-            </div>
-        </div>
-
-        <!-- Tag List -->
-        <div class="mt-6">
-            <h3 class="text-gray-700 font-semibold">Các Tag hiện có:</h3>
-            <div class="flex flex-wrap gap-2 mt-2">
-                {#each tags as tag}
-                    <div class="flex items-center bg-blue-100 text-blue-700 px-4 py-2 rounded-full shadow-md">
-                        <span>{tag}</span>
-                        <button
-                            class="ml-2 text-red-500 hover:text-red-700"
-                            on:click={() => removeTag(tag)}
-                        >
-                            &times;
-                        </button>
+                <div>
+                    <label class="block text-gray-700 font-semibold">Thể Loại:</label>
+                    <div class="flex flex-wrap gap-2 mt-2">
+                        {#each categories as category}
+                            <label class="flex items-center">
+                                <input type="checkbox" value={category.category_id} on:change={(e) => {
+                                    const value = e.target.value;
+                                    if (e.target.checked) {
+                                        selectedCategories = [...selectedCategories, value];
+                                    } else {
+                                        selectedCategories = selectedCategories.filter((id) => id !== value);
+                                    }
+                                }} />
+                                <span class="ml-2">{category.name}</span>
+                            </label>
+                        {/each}
                     </div>
-                {/each}
+                </div>
             </div>
         </div>
 
         <!-- Save Button -->
         <div class="mt-6 flex justify-end">
-            <button class="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600" on:click={saveBook}>
-                Xác nhận
-            </button>
+            <button class="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600" on:click={saveBook}>Xác nhận</button>
         </div>
     </div>
 </div>
-
-<style>
-    /* Add any additional styling if needed */
-</style>
