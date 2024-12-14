@@ -142,7 +142,7 @@
                 </div>
                 <div>
                     <label class="block text-gray-700 font-semibold">Thể Loại:</label>
-                    <div class="flex flex-wrap gap-2 mt-2">
+                    <div class="flex flex-wrap gap-8 mt-2">
                         {#each categories as category}
                             <label class="flex items-center">
                                 <input type="checkbox" value={category.category_id} on:change={(e) => {

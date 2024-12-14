@@ -23,7 +23,6 @@
         <li><a href="#" class="hover:underline">Trang chủ</a></li>
         <li><a href="#" class="hover:underline">Xếp hạng</a></li>
         <li><a href="#" class="hover:underline">Thể loại</a></li>
-        <li><a href="/manageBookOption" class="hover:underline">Quản lý</a></li>
       </ul>
       {#if isAuthenticated}
         <!-- User profile dropdown -->
@@ -35,14 +34,17 @@
             on:click={() => (showDropdown = !showDropdown)}
           />
           {#if showDropdown}
-            <div class="absolute right-0 bg-white text-black rounded shadow-lg w-48">
-              <button class="block w-full text-left px-4 py-2 hover:bg-gray-100" on:click={navigateToProfile}>
+            <div class="absolute right-0 bg-white text-black rounded shadow-lg w-48 rounded-md">
+              <button class="block w-full text-left px-4 py-2 hover:bg-gray-100 rounded-md" on:click={navigateToProfile}>
                 Thông tin cá nhân
               </button>
               <button class="block w-full text-left px-4 py-2 hover:bg-gray-100" on:click={navigateToHistory}>
                 Lịch sử xem
               </button>
-              <button class="block w-full text-left px-4 py-2 text-red-500 hover:bg-gray-100" on:click={onLogout}>
+              <button class="block w-full text-left px-4 py-2 hover:bg-gray-100" on:click={()=>goto("/manageBookOption")}>
+                Quản lý
+              </button>
+              <button class="block w-full text-left px-4 py-2 text-red-500 hover:bg-gray-100 rounded-md" on:click={onLogout}>
                 Đăng xuất
               </button>
             </div>

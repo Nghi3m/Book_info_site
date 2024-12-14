@@ -93,6 +93,7 @@ app.post(
   upload.fields([{ name: 'cover', maxCount: 1 }, { name: 'pdf', maxCount: 1 }]),
   async (req, res) => {
       const {
+          bookId,
           title,
           author,
           publisherId,
@@ -109,14 +110,20 @@ app.post(
           const connection = await pool.getConnection();
           await connection.beginTransaction();
 
-          // Generate the new book_id
-          const [maxResult] = await connection.query(
-              "SELECT MAX(CAST(SUBSTRING(book_id, 2) AS UNSIGNED)) AS maxId FROM Books"
-          );
-          const nextId = maxResult[0].maxId ? maxResult[0].maxId + 1 : 1;
-          const generatedBookId = `B${String(nextId).padStart(7, '0')}`;
+          // Determine whether to use the provided bookId or generate a new one
+          let generatedBookId;
+          if (bookId && bookId !== 'NULL') {
+              generatedBookId = bookId;
+          } else {
+              // Generate a new book_id
+              const [maxResult] = await connection.query(
+                  "SELECT MAX(CAST(SUBSTRING(book_id, 2) AS UNSIGNED)) AS maxId FROM Books"
+              );
+              const nextId = maxResult[0].maxId ? maxResult[0].maxId + 1 : 1;
+              generatedBookId = `B${String(nextId).padStart(7, '0')}`;
+          }
 
-          // Insert the book information
+          // Insert or update the book information
           await connection.query(
               'CALL AddBook(?, ?, ?, ?, ?, ?)',
               [generatedBookId, title, author, publisherId, cover, pdf]
@@ -130,10 +137,10 @@ app.post(
 
           await connection.commit();
           connection.release();
-          res.status(200).json({ message: 'Book added successfully', bookId: generatedBookId });
+          res.status(200).json({ message: 'Book added or updated successfully', bookId: generatedBookId });
       } catch (error) {
           console.error(error);
-          res.status(500).json({ error: 'Error adding book' });
+          res.status(500).json({ error: 'Error adding or updating book' });
       }
   }
 );

@@ -97,10 +97,10 @@
     </div>
 
     <!-- Book Description -->
-    <div class="mt-8">
+    <!-- <div class="mt-8">
       <h2 class="text-lg font-semibold text-gray-800">Thông Tin Sách</h2>
-      <p class="mt-2 text-gray-600">{book.description || 'Không có mô tả.'}</p>
-    </div>
+      <p class="mt-2 text-gray-600">{book.description || 'Không có mô tả.'}</p> -->
+    <!-- </div> -->
   </div>
 </div>
 {:else}

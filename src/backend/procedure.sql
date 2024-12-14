@@ -187,7 +187,10 @@ DROP PROCEDURE IF EXISTS deleteBook;
 
 CREATE PROCEDURE deleteBook(IN bookID VARCHAR(8))
 BEGIN
-    -- Delete entries from BookStatistics table first
+    -- Delete entries from ReadHistory table
+    DELETE FROM readhistory WHERE book_id = bookID;
+
+    -- Delete entries from BookStatistics table
     DELETE FROM bookstatistics WHERE book_id = bookID;
 
     -- Delete entries from BookCategories table
@@ -197,5 +200,11 @@ BEGIN
     DELETE FROM Books WHERE book_id = bookID;
 END;
 
+-- @block\
+UPDATE categories
+set name="Kinh dị"
+where category_id="C0002";
 
+-- @block
+INSERT INTO categories VALUES ("C0006", "Trinh thám");
 
