@@ -1,17 +1,17 @@
--- @block
+
 DROP PROCEDURE IF EXISTS GetAllBooks;
 CREATE PROCEDURE GetAllBooks()
 BEGIN
     SELECT book_id, title, author, cover_path FROM Books;
 END;
 
--- @block
+
 CREATE PROCEDURE GetAllCategories()
 BEGIN
     SELECT * FROM Categories;
 END;
 
--- @block
+
 DROP PROCEDURE IF EXISTS AddBook;
 CREATE PROCEDURE AddBook(
     IN p_bookId VARCHAR(8),
@@ -35,7 +35,6 @@ END;
 
 
 
--- @block
 DROP PROCEDURE IF EXISTS AddBookCategory;
 CREATE PROCEDURE AddBookCategory(
     IN p_bookId VARCHAR(8),
@@ -52,7 +51,6 @@ BEGIN
 END;
 
 
--- @block
 DROP PROCEDURE IF EXISTS GetBookDetails;
 CREATE PROCEDURE GetBookDetails(
     IN p_book_id VARCHAR(8),
@@ -158,11 +156,9 @@ BEGIN
         IF(is_favorite > 0, TRUE, FALSE) AS is_favorite;
 END;
 
--- @block
-Delete from BookCategories WHERE book_id="NULL";
-Delete from books WHERE book_id="NULL";
 
-DROP TRIGGER IF EXISTS GenerateBookId;
+
+-- DROP TRIGGER IF EXISTS GenerateBookId;
 
 -- CREATE TRIGGER GenerateBookId
 -- BEFORE INSERT ON Books
@@ -180,9 +176,7 @@ DROP TRIGGER IF EXISTS GenerateBookId;
 --     END IF;
 -- END;
 
--- @block
-Delete from books where book_id="r2h09";
--- @block
+
 DROP PROCEDURE IF EXISTS deleteBook;
 
 CREATE PROCEDURE deleteBook(IN bookID VARCHAR(8))
@@ -200,11 +194,4 @@ BEGIN
     DELETE FROM Books WHERE book_id = bookID;
 END;
 
--- @block\
-UPDATE categories
-set name="Kinh dị"
-where category_id="C0002";
-
--- @block
-INSERT INTO categories VALUES ("C0006", "Trinh thám");
 
