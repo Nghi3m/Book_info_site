@@ -1,31 +1,70 @@
 <script>
     import { goto } from '$app/navigation';
-
-    let username = "MeTruyen123";
-    let books = Array(12).fill().map((_, i) => ({
-        id: Math.random().toString(36).substr(2, 9),
-        title: `Thanh Gươm Diệt Quỷ`,
-        chapter: `Chap 206`,
-        cover: "/path/to/cover.jpg",
-    }));
+    import { onMount } from 'svelte';
+    
+    let storedUser = JSON.parse(localStorage.getItem("loggedinUser"));
+    let username = storedUser.username;
+    let books = [];
     let currentPage = 1;
-    let totalPages = 5;
+    let totalPages = 1;
+    let userId = storedUser.userId; // Replace with dynamic userId if needed
+    
+    // Fetch user history
+    async function fetchHistory() {
+        try {
+            const response = await fetch(`http://localhost:3000/user/history?userId=${userId}`);
+            const result = await response.json();
+            if (result.success) {
+                books = result.history.map(item => ({
+                    id: item.book_id,
+                    title: item.title,
+                    chapter: `Last Read Page: ${item.last_read_page || "N/A"}`,
+                    cover: `covers/${item.cover_path}` || "/path/to/default-cover.jpg",
+                }));
+                totalPages = Math.ceil(books.length / 12); // Assuming 12 books per page
+            } else {
+                console.error("Failed to fetch history:", result.error);
+            }
+        } catch (error) {
+            console.error("Error fetching history:", error);
+        }
+    }
 
+    // Clear user history
+    async function clearHistory() {
+        if (confirm("Bạn có chắc chắn muốn xóa toàn bộ lịch sử?")) {
+            try {
+                const response = await fetch(`http://localhost:3000/user/history?userId=${userId}`, {
+                    method: 'DELETE',
+                });
+                const result = await response.json();
+                if (result.success) {
+                    books = [];
+                    totalPages = 1;
+                    currentPage = 1;
+                } else {
+                    console.error("Failed to clear history:", result.error);
+                }
+            } catch (error) {
+                console.error("Error clearing history:", error);
+            }
+        }
+    }
+
+    // Handle pagination
     function goToPage(page) {
         if (page >= 1 && page <= totalPages) {
             currentPage = page;
         }
     }
 
-    function clearHistory() {
-        if (confirm("Bạn có chắc chắn muốn xóa toàn bộ lịch sử?")) {
-            books = [];
-        }
-    }
-
+    // Go back to the previous page
     function goBack() {
         goto("/");
     }
+
+    // Fetch history on component mount
+    onMount(fetchHistory);
 </script>
 
 <div class="bg-blue-50 min-h-screen p-6">
@@ -42,7 +81,7 @@
         </button>
 
         <div class="grid grid-cols-4 gap-4">
-            {#each books as book}
+            {#each books.slice((currentPage - 1) * 12, currentPage * 12) as book}
                 <div class="border rounded-md shadow-md p-4 text-center hover:shadow-lg transition">
                     <img src={book.cover} alt={book.title} class="w-full h-40 object-cover rounded-md" />
                     <h3 class="mt-2 text-gray-700 font-semibold">{book.title}</h3>

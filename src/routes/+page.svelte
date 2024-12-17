@@ -24,7 +24,7 @@
         showLoginModal = false;
   
         // Store user info in localStorage
-        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('user', JSON.stringify(loggedinUser));
     }
   
     /**

@@ -202,31 +202,86 @@ app.get("/getAllBooks", async (req, res) => {
   }
 });
 
-// Delete User History
-app.delete("/user/history", async (req, res) => {
-  const { userId } = req.query;
-
-  try {
-    await pool.execute("CALL DeleteUserHistory(?)", [userId]);
-    res.json({ success: true, message: "User history deleted successfully" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
 // Get User History
 app.get("/user/history", async (req, res) => {
   const { userId } = req.query;
 
+  if (!userId) {
+    return res.status(400).json({ success: false, error: "User ID is required" });
+  }
+
   try {
-    const [rows] = await pool.execute("CALL GetUserHistory(?)", [userId]);
+    // Query to fetch user history from ReadHistory table
+    const [rows] = await pool.query(
+      `SELECT RH.user_id, RH.book_id, RH.read_date, RH.total_time_spent, RH.last_read_page, B.title, B.author, B.cover_path
+       FROM ReadHistory RH 
+       JOIN Books B ON RH.book_id = B.book_id
+       WHERE RH.user_id = ?`, 
+      [userId]
+    );
+
     res.json({ success: true, history: rows });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: "Error fetching user history" });
   }
 });
+
+// Delete User History
+app.delete("/user/history", async (req, res) => {
+  const { userId } = req.query;
+
+  if (!userId) {
+    return res.status(400).json({ success: false, error: "User ID is required" });
+  }
+
+  try {
+    // Query to delete user history from ReadHistory table
+    const [result] = await pool.query(
+      "DELETE FROM ReadHistory WHERE user_id = ?", 
+      [userId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, error: "No history found for the given User ID" });
+    }
+
+    res.json({ success: true, message: "User history deleted successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, error: "Error deleting user history" });
+  }
+});
+// Login endpoint
+app.get("/login", async (req, res) => {
+  const { username, password } = req.query;
+
+  // Validate input
+  if (!username || !password) {
+      return res.status(400).json({ success: false, error: "Username and password are required" });
+  }
+
+  try {
+      // Query the database to verify credentials
+      const [rows] = await pool.query(
+          "SELECT user_id, name FROM Users WHERE account = ? AND password = ?",
+          [username, password]
+      );
+
+      // If no matching user is found
+      if (rows.length === 0) {
+          return res.status(401).json({ success: false, error: "Invalid username or password" });
+      }
+
+      // Return username and user_id
+      const user = rows[0];
+      res.json({ success: true, username: user.name, userId: user.user_id });
+  } catch (err) {
+      console.error(err);
+      res.status(500).json({ success: false, error: "An error occurred during login" });
+  }
+});
+
 
 // Start the server
 const PORT = 3000;
