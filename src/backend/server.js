@@ -334,6 +334,33 @@ app.post('/updateReadHistory', async (req, res) => {
     res.status(500).json({ success: false, error: "Error updating read history and book view count" });
   }
 });
+// Update Username
+app.get("/updateUsername", async (req, res) => {
+  const { userId, newName } = req.query;
+
+  // Validate input
+  if (!userId || !newName) {
+    return res.status(400).json({ success: false, error: "User ID and new name are required" });
+  }
+
+  try {
+    // Update the username in the database
+    const [result] = await pool.query(
+      "UPDATE Users SET name = ? WHERE user_id = ?",
+      [newName, userId]
+    );
+
+    // Check if any rows were affected
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, error: "User not found" });
+    }
+
+    res.json({ success: true, message: "Username updated successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, error: "Error updating username" });
+  }
+});
 
 
 // Start the server
