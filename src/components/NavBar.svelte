@@ -28,7 +28,7 @@
         <!-- User profile dropdown -->
         <div class="relative">
           <img
-            src={user.profilePic}
+            src="defaultProfilePic.png"
             alt="Profile Picture"
             class="w-10 h-10 rounded-full cursor-pointer"
             on:click={() => (showDropdown = !showDropdown)}

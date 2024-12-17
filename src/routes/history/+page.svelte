@@ -1,16 +1,19 @@
 <script>
     import { goto } from '$app/navigation';
     import { onMount } from 'svelte';
-    
-    let storedUser = JSON.parse(localStorage.getItem("loggedinUser"));
-    let username = storedUser.username;
+
+
+    let username = '';
     let books = [];
     let currentPage = 1;
     let totalPages = 1;
-    let userId = storedUser.userId; // Replace with dynamic userId if needed
+    let userId =''; // Replace with dynamic userId if needed
     
     // Fetch user history
     async function fetchHistory() {
+        let user = JSON.parse(localStorage.getItem('user'));
+        userId = user.userId;
+        username = user.username;
         try {
             const response = await fetch(`http://localhost:3000/user/history?userId=${userId}`);
             const result = await response.json();

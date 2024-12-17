@@ -5,14 +5,18 @@
 
   let book = null;
   let bookId = null;
-  let userId = 'U0000001'; // Static userId for this example
+  let userId = 'U0000001'; // Static userId for demonstration
   let isLiked = false;
   let isFollowing = false;
+  let showModal = false; // Modal state
 
-  // Parse the bookId from URL
+  // Dynamically extract the `bookId` from the URL query params
   $: bookId = $page.url.searchParams.get('bookId');
 
+  // Fetch book details from the endpoint
   async function fetchBookDetails() {
+    let user = JSON.parse(localStorage.getItem('user'));
+    userId = user.userId;
     if (!bookId) return;
 
     try {
@@ -21,26 +25,53 @@
 
       if (data.success) {
         book = data.book;
-        isLiked = book.isFavorite === 1;
-        isFollowing = book.totalFollowers > 0;
+        isLiked = book.isFavorite === 1; // Map API response to `isLiked`
+        isFollowing = book.totalFollowers > 0; // Map follow status
       } else {
-        console.error('Failed to fetch book details');
+        console.error('Failed to fetch book details:', data.message);
       }
     } catch (error) {
       console.error('Error fetching book details:', error);
     }
   }
 
+  async function updateReadHistory() {
+    if (!bookId || !userId) return;
+
+    try {
+      const response = await fetch(`http://localhost:3000/updateReadHistory?bookId=${bookId}&userId=${userId}&lastReadPage=${Math.floor(Math.random() * 100)}`, {
+        method: 'POST',
+      });
+      const data = await response.json();
+
+      if (!data.success) {
+        console.error('Failed to update read history:', data.message);
+      }
+    } catch (error) {
+      console.error('Error updating read history:', error);
+    }
+  }
+
   function toggleLike() {
     isLiked = !isLiked;
-    // Handle API request to update favorite status
+    // Handle API request for updating like status
   }
 
   function toggleFollow() {
     isFollowing = !isFollowing;
-    // Handle API request to update follow status
+    // Handle API request for updating follow status
   }
 
+  async function openReaderModal() {
+    await updateReadHistory(); // Call the updateReadHistory endpoint
+    showModal = true; // Open the modal
+  }
+
+  function closeReaderModal() {
+    showModal = false;
+  }
+
+  // Fetch book details when the component mounts
   onMount(fetchBookDetails);
 </script>
 
@@ -74,7 +105,7 @@
         <div class="mt-6 flex gap-4">
           <button
             class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            on:click={() => {}}
+            on:click={openReaderModal}
           >
             Bắt Đầu Đọc
           </button>
@@ -95,14 +126,27 @@
         </div>
       </div>
     </div>
-
-    <!-- Book Description -->
-    <!-- <div class="mt-8">
-      <h2 class="text-lg font-semibold text-gray-800">Thông Tin Sách</h2>
-      <p class="mt-2 text-gray-600">{book.description || 'Không có mô tả.'}</p> -->
-    <!-- </div> -->
   </div>
 </div>
+
+<!-- Modal -->
+{#if showModal}
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+  <div class="bg-white rounded-lg shadow-lg p-6 max-w-3xl w-full">
+    <header class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-semibold">Nội dung của {book.title}</h2>
+      <button class="text-gray-500 hover:text-gray-700" on:click={closeReaderModal}>
+        &times;
+      </button>
+    </header>
+    <div class="overflow-y-auto max-h-96">
+      <p class="text-gray-700 leading-relaxed">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris. Fusce nec tellus sed augue semper porta. Mauris massa. Vestibulum lacinia arcu eget nulla. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.
+      </p>
+    </div>
+  </div>
+</div>
+{/if}
 {:else}
 <div class="flex items-center justify-center min-h-screen">
   <p class="text-gray-500">Đang tải...</p>
@@ -111,4 +155,8 @@
 
 <style>
   /* Add custom styles if needed */
+  .modal-content {
+    max-height: 80vh;
+    overflow-y: auto;
+  }
 </style>

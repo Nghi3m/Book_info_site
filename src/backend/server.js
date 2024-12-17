@@ -281,6 +281,59 @@ app.get("/login", async (req, res) => {
       res.status(500).json({ success: false, error: "An error occurred during login" });
   }
 });
+// Update or Add Read History and Increment Book View Count
+app.post('/updateReadHistory', async (req, res) => {
+  const { userId, bookId, readDate, totalTimeSpent, lastReadPage } = req.query;
+
+  // Validate input
+  if (!userId || !bookId) {
+    return res.status(400).json({ success: false, error: "User ID and Book ID are required" });
+  }
+
+  try {
+    const connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    // Check if a read history entry already exists
+    const [existingHistory] = await connection.query(
+      "SELECT * FROM ReadHistory WHERE user_id = ? AND book_id = ?",
+      [userId, bookId]
+    );
+
+    if (existingHistory.length > 0) {
+      // Update the existing read history entry
+      await connection.query(
+        `UPDATE ReadHistory 
+         SET read_date = ?, total_time_spent = ?, last_read_page = ?
+         WHERE user_id = ? AND book_id = ?`,
+        [readDate || new Date(), totalTimeSpent || 0, lastReadPage || 0, userId, bookId]
+      );
+    } else {
+      // Insert a new read history entry
+      await connection.query(
+        `INSERT INTO ReadHistory (user_id, book_id, read_date, total_time_spent, last_read_page)
+         VALUES (?, ?, ?, ?, ?)`,
+        [userId, bookId, readDate || new Date(), totalTimeSpent || 0, lastReadPage || 0]
+      );
+    }
+
+    // Increment the book's total readers count in BookStatistics
+    await connection.query(
+      `UPDATE BookStatistics 
+       SET total_readers = total_readers + 1
+       WHERE book_id = ?`,
+      [bookId]
+    );
+
+    await connection.commit();
+    connection.release();
+
+    res.status(200).json({ success: true, message: "Read history updated and book view count incremented" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, error: "Error updating read history and book view count" });
+  }
+});
 
 
 // Start the server

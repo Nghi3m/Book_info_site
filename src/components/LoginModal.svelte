@@ -15,7 +15,7 @@
 
               if (data.success) {
                   // Dispatch loginSuccess event with the user data
-                  dispatch('loginSuccess', { username: data.username, userId: data.userId });
+                  dispatch('loginSuccess', { username: data.username, userId: data.userId, profilePic:"defaultProfilePic.png"});
               } else {
                   // Handle login failure
                   alert(data.error || 'Invalid username or password');
