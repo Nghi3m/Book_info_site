@@ -264,7 +264,7 @@ app.get("/login", async (req, res) => {
   try {
       // Query the database to verify credentials
       const [rows] = await pool.query(
-          "SELECT user_id, name FROM Users WHERE account = ? AND password = ?",
+          "SELECT user_id, name, is_admin FROM Users WHERE account = ? AND password = ?",
           [username, password]
       );
 
@@ -275,7 +275,7 @@ app.get("/login", async (req, res) => {
 
       // Return username and user_id
       const user = rows[0];
-      res.json({ success: true, username: user.name, userId: user.user_id });
+      res.json({ success: true, username: user.name, userId: user.user_id, isAdmin: user.is_admin > 0 });
   } catch (err) {
       console.error(err);
       res.status(500).json({ success: false, error: "An error occurred during login" });

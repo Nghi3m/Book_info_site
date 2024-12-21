@@ -47,7 +47,7 @@
       } else if (sortOption === "author") {
         return a.author.localeCompare(b.author);
       } else if (sortOption === "book_id") {
-        return a.book_id - b.book_id;
+        return parseInt(b.book_id.slice(1)) - parseInt(a.book_id.slice(1));
       }
     });
 

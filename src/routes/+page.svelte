@@ -57,6 +57,7 @@
                     image: "covers/" + book.cover_path, // Assuming file_path contains the thumbnail or placeholder
                     author: book.author,
                 }));
+                books.sort((a, b) => parseInt(b.bookId.slice(1)) - parseInt(a.bookId.slice(1)))
             }
         } catch (error) {
             console.error('Failed to fetch books:', error);
@@ -73,7 +74,7 @@
   
   <main class="bg-blue-100 py-32 max-w-full">
     <Section title="Truyện mới nhất" items={books} />
-    <Section title="Lượt xem nhiều nhất" items={books} />
+    <!-- <Section title="Lượt xem nhiều nhất" items={books} /> -->
   </main>
   
   {#if showLoginModal}
